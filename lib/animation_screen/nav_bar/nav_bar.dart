@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 
 class AnimatedNavBar extends StatefulWidget {
   const AnimatedNavBar({super.key});
@@ -16,12 +15,19 @@ class _AnimatedNavBarState extends State<AnimatedNavBar> {
   final navItems = [
     "Home",
     "Wallet",
+    "Activity",
     "Setting",
   ];
 
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -32,12 +38,22 @@ class _AnimatedNavBarState extends State<AnimatedNavBar> {
       ),
       body: NotificationListener(
         onNotification: (notification) {
-          if(scrollController.position.userScrollDirection == ScrollDirection.reverse) {
+          // if(scrollController.position.userScrollDirection == ScrollDirection.reverse) {
+          //   // User is scrolling down;
+          //   setState(() {
+          //     isContainerVisible = false;
+          //   });
+          // } else if (scrollController.position.userScrollDirection == ScrollDirection.forward){
+          //   setState(() {
+          //     isContainerVisible = true;
+          //   });
+          // }
+          if (scrollController.position.pixels >= 100) {
             // User is scrolling down;
             setState(() {
               isContainerVisible = false;
             });
-          } else if (scrollController.position.userScrollDirection == ScrollDirection.forward){
+          } else {
             setState(() {
               isContainerVisible = true;
             });
@@ -67,62 +83,78 @@ class _AnimatedNavBarState extends State<AnimatedNavBar> {
     final icons = [
       Icons.home,
       Icons.account_balance_wallet,
+      Icons.local_activity_outlined,
       Icons.settings,
     ];
 
-    return AnimatedContainer(
-      duration: const Duration(seconds: 1),
-      curve: Curves.easeInOut,
-      height: isContainerVisible ? 60 : 0,
-      margin: const EdgeInsets.only(
-        left: 24,
-        right: 24,
-        bottom: 24,
-      ),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(20),
-            blurRadius: 20,
-            spreadRadius: 10,
-          )
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(navItems.length, (index) {
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                selectedIndex = index;
-              });
-            },
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  icons[index],
-                  color: selectedIndex == index ? Colors.blue : Colors.grey,
-                  size: isContainerVisible ? 24 : 0,
-                ),
-                Text(
-                  navItems[index],
-                  style: TextStyle(
-                    fontSize: isContainerVisible ? 12 : 0,
-                    color: selectedIndex == index ? Colors.blue : Colors.grey,
-                    fontWeight: selectedIndex == index ? FontWeight.bold : FontWeight.normal,
-                  ),
-                ),
-              ],
+    return ClipRect(
+      child: AnimatedContainer(
+        duration: const Duration(seconds: 1),
+        curve: Curves.easeInOut,
+        height: isContainerVisible ? 65 : 0,
+        margin: const EdgeInsets.only(
+          left: 24,
+          right: 24,
+          bottom: 24,
+        ),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(20),
+              blurRadius: 20,
+              spreadRadius: 10,
             ),
-          );
-        }),
+          ],
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final itemWidth = constraints.maxHeight;
+            final iconSize = (itemWidth * 0.5).floorToDouble();
+            final textSize = (itemWidth * 0.22).floorToDouble();
+            final spacing = (itemWidth * 0.1).floorToDouble();
+
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: List.generate(navItems.length, (index) {
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      selectedIndex = index;
+                    });
+                  },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        icons[index],
+                        color: selectedIndex == index ? Colors.blue : Colors.grey,
+                        size: iconSize,
+                      ),
+                      SizedBox(height: spacing),
+                      Text(
+                        navItems[index],
+                        style: TextStyle(
+                          fontSize: textSize,
+                          color: selectedIndex == index ? Colors.blue : Colors.grey,
+                          fontWeight: selectedIndex == index
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            );
+          },
+        ),
       ),
     );
   }
+
 
 }
